@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Educacional | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- MENU DE NAVEGAÇÃO -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 shadow-sm">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">Educa<span class="text-yellow-500">Mais</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 font-medium">
+                    <a href="#" class="text-blue-600">Início</a>
+                    <a href="#materiais" class="hover:text-blue-600">Materiais</a>
+                    <a href="#" class="hover:text-blue-600">Sobre</a>
+                    <a href="#" class="hover:text-blue-600">Contato</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SEÇÃO HERO (Destaque Principal) -->
+    <header class="bg-blue-600 py-16 px-4 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                Recursos Pedagógicos e Inovação na Educação
+            </h1>
+            <p class="text-xl text-blue-100 mb-8">
+                Explore materiais didáticos, jogos interativos e estratégias de ensino projetadas para transformar o aprendizado em sala de aula.
+            </p>
+            <a href="#materiais" class="bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300">
+                Ver Materiais
+            </a>
+        </div>
+    </header>
+
+    <!-- GRADE DE LINKS (CARDS) -->
+    <main id="materiais" class="max-w-6xl mx-auto py-16 px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-800">Meus Conteúdos</h2>
+            <p class="text-gray-600 mt-2">Selecione uma categoria para acessar as atividades e projetos.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            <!-- CARD 1: MATEMÁTICA -->
+            <!-- PARA ADICIONAR LINK: Troque o '#' abaixo pelo nome do seu arquivo (ex: matematica.html) -->
+            <a href="#" class="card-hover bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500 text-center block">
+                <div class="text-4xl mb-4">🧮</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Matemática</h3>
+                <p class="text-gray-600 text-sm italic">Jogos de operações, desafios lógicos e calculadoras interativas.</p>
+            </a>
+
+            <!-- CARD 2: LITERACIA / PORTUGUÊS -->
+            <a href="#" class="card-hover bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500 text-center block">
+                <div class="text-4xl mb-4">📖</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Literacia</h3>
+                <p class="text-gray-600 text-sm italic">Projetos de leitura, fluência e atividades de produção de texto.</p>
+            </a>
+
+            <!-- CARD 3: CIÊNCIAS E NEUROBIOLOGIA -->
+            <a href="#" class="card-hover bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500 text-center block">
+                <div class="text-4xl mb-4">🧠</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Neurociência</h3>
+                <p class="text-gray-600 text-sm italic">Artigos e estratégias baseadas em como o cérebro aprende.</p>
+            </a>
+
+            <!-- CARD 4: RECURSOS DIGITAIS -->
+            <a href="#" class="card-hover bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500 text-center block">
+                <div class="text-4xl mb-4">💻</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Ferramentas</h3>
+                <p class="text-gray-600 text-sm italic">Tutoriais de design, códigos úteis e recursos para professores.</p>
+            </a>
+
+            <!-- CARD 5: TESTE DE LINK -->
+            <a href="#" class="card-hover bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500 text-center block">
+                <div class="text-4xl mb-4">💻</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Testando link</h3>
+                <p class="text-gray-600 text-sm italic">Vamos ver se esse negócio está está funcionando.</p>
+            </a>
+
+        </div>
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-auto">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="mb-4">© 2026 Portal Educacional - Criado para transformar a educação.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="hover:text-yellow-500">Instagram</a>
+                <a href="#" class="hover:text-yellow-500">YouTube</a>
+                <a href="#" class="hover:text-yellow-500">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

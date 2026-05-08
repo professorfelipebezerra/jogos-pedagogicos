@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio Matemático Pro - Edição Cronômetro</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #f39c12;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #a2d2ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 95%;
+            max-width: 1100px;
+        }
+
+        #setup-screen, #result-screen { text-align: center; }
+        #game-screen, #result-screen { display: none; }
+
+        .input-group { margin: 15px 0; text-align: left; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        #names-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--dark); }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light);
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .scoreboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .player-card {
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            transition: all 0.4s;
+            opacity: 0.4;
+            flex: 1;
+            min-width: 140px;
+            background-color: var(--dark);
+        }
+        .player-card.active {
+            opacity: 1;
+            transform: scale(1.05);
+            border: 3px solid gold;
+        }
+
+        .p-color-0 { background-color: #9b59b6; }
+        .p-color-1 { background-color: #34495e; }
+        .p-color-2 { background-color: #e67e22; }
+        .p-color-3 { background-color: #16a085; }
+        .p-color-4 { background-color: #c0392b; }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .question-area {
+            text-align: center;
+            background: var(--light);
+            padding: 40px;
+            border-radius: 20px;
+        }
+
+        #timer { font-size: 3rem; font-weight: bold; color: var(--danger); margin-bottom: 10px; }
+        #math-question { font-size: 4.5rem; margin: 25px 0; color: var(--dark); min-height: 140px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+
+        .history-area {
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 15px;
+            height: 480px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+        .history-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border-left: 5px solid;
+        }
+        .correct { background: #e8f5e9; border-left-color: var(--success); }
+        .wrong { background: #ffebee; border-left-color: var(--danger); }
+
+        button { cursor: pointer; border: none; border-radius: 12px; padding: 15px 30px; font-weight: bold; }
+        .btn-start { background: var(--success); color: white; width: 100%; font-size: 1.3rem; margin-top: 20px; }
+        .btn-check { background: var(--primary); color: white; font-size: 1.2rem; }
+        .btn-next { background: var(--secondary); color: white; font-size: 1.2rem; display: none; }
+        .btn-reset { background: #95a5a6; color: white; margin-top: 40px; }
+
+        #feedback { font-size: 1.8rem; font-weight: 900; margin: 20px 0; min-height: 40px; }
+
+        .help-trigger {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--dark);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        #help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--danger);
+        }
+
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .help-table th, .help-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .help-table th { background: var(--light); }
+
+        @media (max-width: 850px) { .game-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="help-trigger" onclick="toggleModal(true)">?</div>
+
+<div id="help-modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2 style="color: var(--primary); margin-top: 0;">📖 Como Jogar</h2>
+        <p>O <b>Desafio Matemático</b> é um jogo de turnos para até 5 jogadores testarem sua agilidade mental.</p>
+        
+        <ol>
+            <li><b>Configuração:</b> Escolha o número de jogadores, a operação matemática e a dificuldade.</li>
+            <li><b>O Jogo:</b> Cada jogador tem sua vez de responder. O cartão do jogador ativo fica iluminado.</li>
+            <li><b>Desempate:</b> Em caso de mesmo número de acertos, vence quem tiver a menor média de tempo de resposta.</li>
+        </ol>
+
+        <h3 style="color: var(--secondary);">📊 Níveis de Dificuldade</h3>
+        <table class="help-table">
+            <tr>
+                <th>Operação</th>
+                <th>🟢 Fácil</th>
+                <th>🟡 Médio</th>
+                <th>🔴 Difícil</th>
+            </tr>
+            <tr>
+                <td>Soma/Sub</td>
+                <td>Até 20</td>
+                <td>Até 160</td>
+                <td>Até 800</td>
+            </tr>
+            <tr>
+                <td>Multiplicação</td>
+                <td>Tabuadas 1, 2, 5, 10</td>
+                <td>Tabuadas 3 ao 9</td>
+                <td>Dezenas x Unidades</td>
+            </tr>
+            <tr>
+                <td>Divisão</td>
+                <td>Divisores fáceis</td>
+                <td>Divisores comuns</td>
+                <td>Resultados maiores</td>
+            </tr>
+            <tr>
+                <td>Expressão</td>
+                <td>Soma e Subtração</td>
+                <td>As 4 operações (Misto)</td>
+                <td>Uso de Parênteses ( )</td>
+            </tr>
+        </table>
+        <p style="font-size: 7pt; text-align: center">Prof. Felipe Bezerra</p>
+    </div>
+</div>
+
+<div class="container">
+    <div id="setup-screen">
+        <h1 style="color: var(--primary)">Desafio Matemático</h1>
+        <div class="input-group">
+            <label>Número de Alunos:</label>
+            <select id="player-count" onchange="updatePlayerInputs()">
+                <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+            </select>
+        </div>
+        <div id="names-container"></div>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>Operação:</label>
+                <select id="operation">
+                    <option value="soma">Adição (+)</option>
+                    <option value="subtracao">Subtração (-)</option>
+                    <option value="multiplicacao" selected>Multiplicação (×)</option>
+                    <option value="divisao">Divisão (÷)</option>
+                    <option value="expressao">Expressões</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Dificuldade:</label>
+                <select id="difficulty">
+                    <option value="facil">🟢 Fácil</option>
+                    <option value="medio">🟡 Médio</option>
+                    <option value="dificil">🔴 Difícil</option>
+                </select>
+            </div>
+        </div>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>Rodadas:</label>
+                <select id="rounds-limit">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Tempo Máximo:</label>
+                <select id="time-limit">
+                <option value="15">15 Segundos</option>
+                <option value="30" selected>30 Segundos</option>
+                <option value="45">45 Segundos</option>
+                <option value="60">1 Minuto</option>
+                <option value="90">1,5 Minuto</option>
+                <option value="120">2 Minutos</option>
+                <option value="150">2,5 Minutos</option>
+                <option value="180">3 Minutos</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-start" onclick="startGame()">INICIAR!</button>
+    </div>
+
+    <div id="game-screen">
+        <div id="dynamic-scoreboard" class="scoreboard"></div>
+        <div class="game-layout">
+            <div class="question-area">
+                <div id="turn-indicator">Carregando...</div>
+                <div id="timer">--</div>
+                <div id="math-question">...</div>
+                <input type="number" id="answer-input" placeholder="?" autocomplete="off" style="width: 180px; text-align: center; font-size: 2.5rem;">
+                <div id="feedback"></div>
+                <div>
+                    <button id="btn-check" class="btn-check" onclick="checkAnswer()">Conferir</button>
+                    <button id="btn-next" class="btn-next" onclick="prepareNextQuestion()">Próximo</button>
+                </div>
+            </div>
+            <div class="history-area" id="history-log">
+                <h3 style="margin: 0 0 15px 0;">Histórico</h3>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h1 style="color: var(--primary); font-size: 2.5rem;">🏆 Resultado Final</h1>
+        <div id="final-ranking"></div>
+        <button class="btn-start" onclick="resetGame()">Jogar Novamente</button>
+    </div>
+</div>
+
+<script>
+    let players = [];
+    let currentPlayerIndex = 0;
+    let currentAnswer = 0;
+    let timerInterval;
+    let startTime;
+    let totalRounds = 0;
+    let canCheck = false;
+
+    window.onload = updatePlayerInputs;
+
+    function toggleModal(show) {
+        document.getElementById('help-modal').style.display = show ? 'flex' : 'none';
+    }
+
+    function updatePlayerInputs() {
+        const count = document.getElementById('player-count').value;
+        const container = document.getElementById('names-container');
+        container.innerHTML = "";
+        for (let i = 1; i <= count; i++) {
+            container.innerHTML += `<input type="text" class="player-name-input" placeholder="Nome Aluno ${i}">`;
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.getElementById('game-screen').style.display === 'block') {
+            if (e.key === 'Enter') canCheck ? checkAnswer() : prepareNextQuestion();
+        }
+    });
+
+    function startGame() {
+        const nameInputs = document.querySelectorAll('.player-name-input');
+        players = [];
+        totalRounds = parseInt(document.getElementById('rounds-limit').value);
+        const scoreboard = document.getElementById('dynamic-scoreboard');
+        scoreboard.innerHTML = "";
+
+        nameInputs.forEach((input, index) => {
+            const name = input.value.trim() || `Aluno ${index + 1}`;
+            players.push({ name: name, score: 0, done: 0, totalTime: 0 });
+            scoreboard.innerHTML += `
+                <div id="card-${index}" class="player-card p-color-${index}">
+                    <h3 style="margin:0">${name}</h3>
+                    <div id="status-${index}" style="font-size: 0.8rem;">Aguardando...</div>
+                </div>`;
+        });
+
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        currentPlayerIndex = 0; 
+        prepareNextQuestion();
+    }
+
+    function prepareNextQuestion() {
+        if (players.every(p => p.done >= totalRounds)) { showResults(); return; }
+        while (players[currentPlayerIndex].done >= totalRounds) {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        }
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-check').style.display = 'inline-block';
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('answer-input').value = "";
+        document.getElementById('answer-input').disabled = false;
+        canCheck = true;
+        updateTurnUI();
+        generateQuestion();
+    }
+
+    function updateTurnUI() {
+        players.forEach((_, i) => {
+            document.getElementById(`card-${i}`).classList.toggle('active', i === currentPlayerIndex);
+            document.getElementById(`status-${i}`).innerText = `Rodada ${players[i].done + 1}/${totalRounds}`;
+        });
+        document.getElementById('turn-indicator').innerText = `Vez de: ${players[currentPlayerIndex].name}`;
+    }
+
+    function generateQuestion() {
+        const op = document.getElementById('operation').value;
+        const diff = document.getElementById('difficulty').value;
+        let n1, n2, n3, qText, ans;
+        let isValid = false;
+
+        while (!isValid) {
+            if (op === 'soma') { 
+                let limit = (diff === 'facil' ? 20 : (diff === 'medio' ? 160 : 800));
+                n1 = Math.floor(Math.random() * limit); 
+                n2 = Math.floor(Math.random() * (limit - n1)); 
+                if (diff !== 'facil' && (n1 + n2 <= 20)) continue;
+                ans = n1 + n2; qText = `${n1} + ${n2}`; 
+            }
+            else if (op === 'subtracao') { 
+                let limit = (diff === 'facil' ? 20 : (diff === 'medio' ? 160 : 800));
+                n1 = Math.floor(Math.random() * limit); 
+                n2 = Math.floor(Math.random() * n1); 
+                if (diff !== 'facil' && n1 <= 20) continue;
+                ans = n1 - n2; qText = `${n1} - ${n2}`; 
+            }
+           else if (op === 'multiplicacao') { 
+    if (diff === 'facil') {
+        n1 = [1, 2, 5, 10][Math.floor(Math.random() * 4)];
+        n2 = Math.floor(Math.random() * 10) + 1;
+    } else if (diff === 'medio') {
+        n1 = Math.floor(Math.random() * 7) + 3; // Gera de 3 a 9
+        n2 = Math.floor(Math.random() * 8) + 2; // Gera de 2 a 9
+        
+        // Remove tabuadas do nível fácil (1, 2, 5) e garante que n2 não seja 10
+        if ([1, 2, 5, 10].includes(n1) || [1, 2, 5, 10].includes(n2)) continue;
+    } else {
+        n1 = Math.floor(Math.random() * 40) + 11;
+        n2 = Math.floor(Math.random() * 8) + 2;
+    }
+    ans = n1 * n2; qText = `${n1} × ${n2}`; 
+}
+            else if (op === 'divisao') { 
+                if (diff === 'facil') {
+                    n2 = [2, 5, 10][Math.floor(Math.random() * 3)];
+                    ans = Math.floor(Math.random() * 10) + 1;
+                } else if (diff === 'medio') {
+                    n2 = Math.floor(Math.random() * 7) + 3;
+                    if ([2, 5, 10].includes(n2)) continue;
+                    ans = Math.floor(Math.random() * 10) + 1;
+                } else {
+                    n2 = Math.floor(Math.random() * 12) + 2;
+                    ans = Math.floor(Math.random() * 40) + 10;
+                }
+                n1 = n2 * ans; qText = `${n1} ÷ ${n2}`; 
+            }
+            else if (op === 'expressao') {
+                if (diff === 'facil') {
+                    n1 = Math.floor(Math.random() * 15) + 5;
+                    n2 = Math.floor(Math.random() * 10) + 2;
+                    n3 = Math.floor(Math.random() * 5) + 1;
+                    if (Math.random() > 0.5) {
+                        ans = n1 + n2 - n3; qText = `${n1} + ${n2} - ${n3}`;
+                    } else {
+                        ans = n1 - n2 + n3; qText = `${n1} - ${n2} + ${n3}`;
+                    }
+                } else if (diff === 'medio') {
+                    n1 = Math.floor(Math.random() * 10) + 2;
+                    n2 = Math.floor(Math.random() * 5) + 2;
+                    n3 = Math.floor(Math.random() * 10) + 1;
+                    const mode = Math.floor(Math.random() * 8);
+                    switch(mode) {
+                        case 0: ans = n1 + (n2 * n3); qText = `${n1} + ${n2} × ${n3}`; break;
+                        case 1: ans = (n1 * n2) - n3; qText = `${n1} × ${n2} - ${n3}`; break;
+                        case 2: ans = (n1 * n2) + n3; qText = `${n1} × ${n2} + ${n3}`; break;
+                        case 3: ans = (n1 * n2) - n3; qText = `${n1} × ${n2} - ${n3}`; break;
+                        case 4: n1 = n2 * n3; n3 = Math.floor(Math.random()*10); ans = (n1 / n2) + n3; qText = `${n1} ÷ ${n2} + ${n3}`; break;
+                        case 5: n1 = n2 * n3; n3 = Math.floor(Math.random()*5); ans = (n1 / n2) - n3; qText = `${n1} ÷ ${n2} - ${n3}`; break;
+                        case 6: n1 = Math.floor(Math.random()*10); ans = n1 + (n2 * n3 / n3); qText = `${n1} + ${n2 * n3} ÷ ${n3}`; break;
+                        default: n1 = Math.floor(Math.random()*20)+10; ans = n1 - (n2 * n3 / n3); qText = `${n1} - ${n2 * n3} ÷ ${n3}`; break;
+                    }
+                } else {
+                    n1 = Math.floor(Math.random() * 5) + 2;
+                    n2 = Math.floor(Math.random() * 10) + 5;
+                    n3 = Math.floor(Math.random() * 4) + 1;
+                    if (Math.random() > 0.5) {
+                        ans = n1 * (n2 - n3); qText = `${n1} × (${n2} - ${n3})`;
+                    } else {
+                        ans = (n2 + n1) * n3; qText = `(${n2} + ${n1}) × ${n3}`;
+                    }
+                }
+            }
+            isValid = true;
+        }
+
+        currentAnswer = ans;
+        document.getElementById('math-question').innerText = qText;
+        document.getElementById('answer-input').focus();
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        let timeLeft = parseInt(document.getElementById('time-limit').value);
+        startTime = Date.now();
+        document.getElementById('timer').innerText = timeLeft;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) { clearInterval(timerInterval); finishTurn(false, true); }
+        }, 1000);
+    }
+
+    function checkAnswer() {
+        const val = document.getElementById('answer-input').value;
+        if (val === "") return;
+        clearInterval(timerInterval);
+        finishTurn(parseInt(val) === currentAnswer, false);
+    }
+
+    function finishTurn(isCorrect, isTimeout) {
+        canCheck = false;
+        const timeSpent = (Date.now() - startTime) / 1000;
+        const player = players[currentPlayerIndex];
+        
+        player.totalTime += timeSpent;
+        if (isCorrect) player.score++;
+        player.done++;
+
+        document.getElementById('btn-check').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'inline-block';
+        document.getElementById('answer-input').disabled = true;
+        document.getElementById('feedback').innerText = isCorrect ? "✅ Registrado" : "❌ Registrado";
+        document.getElementById('feedback').style.color = isCorrect ? "var(--success)" : "var(--danger)";
+
+        const log = document.getElementById('history-log');
+        const item = document.createElement('div');
+        item.className = `history-item ${isCorrect ? 'correct' : 'wrong'}`;
+        item.innerHTML = `<b>${player.name}</b>: ${document.getElementById('math-question').innerText} <br><small>⏱️ ${timeSpent.toFixed(1)}s</small>`;
+        log.prepend(item);
+        
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    }
+
+    function showResults() {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const ranked = [...players].sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return (a.totalTime / a.done) - (b.totalTime / b.done);
+        });
+
+        let html = '<div style="margin: 20px 0;">';
+        ranked.forEach((p, i) => {
+            const avg = (p.totalTime / p.done).toFixed(2);
+            const medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "👤"));
+            html += `
+                <div style="background: ${i === 0 ? '#f1c40f' : '#f8f9fa'}; padding: 20px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #ddd">
+                    <span><b>${medal} ${p.name}</b></span>
+                    <span><b>${p.score} acertos</b> <br><small>Média: ${avg}s</small></span>
+                </div>`;
+        });
+        document.getElementById('final-ranking').innerHTML = html;
+    }
+
+    function resetGame() { location.reload(); }
+</script>
+</body>
+</html>
