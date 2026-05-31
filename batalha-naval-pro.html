@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Batalha Naval Educativa - SBT</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Comic Sans MS', cursive;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(to bottom, #87CEFA, #dff6ff);
+    padding:15px;
+}
+
+.game-container{
+    width:100%;
+    max-width:1100px;
+    background:white;
+    border-radius:30px;
+    padding:20px;
+    border:8px solid #4ecdc4;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+h1{
+    font-size:36px;
+    color:#ff6b6b;
+    margin-bottom:5px;
+    text-shadow:2px 2px white;
+}
+
+.subtitle{
+    color:#444;
+    font-size:16px;
+    margin-bottom:25px;
+}
+
+.main-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.left-panel {
+    flex: 1;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+    background: #f4f9fc;
+    padding: 20px;
+    border-radius: 20px;
+    border: 3px dashed #bde0fe;
+}
+
+.right-panel {
+    flex: 1.2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.scoreboard{
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+}
+
+.score{
+    padding:12px 20px;
+    border-radius:15px;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hits{ background:#2ecc71; }
+.misses{ background:#2563eb; } 
+.bombs{ background:#9b5de5; }
+
+.message{
+    min-height:60px;
+    font-size:18px;
+    font-weight:bold;
+    color:#333;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #ced6e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.board-wrapper{
+    overflow:auto;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:40px repeat(10, 48px);
+    grid-template-rows:40px repeat(10, 48px);
+    gap:4px;
+    background:#70c1ff;
+    padding:10px;
+    border-radius:20px;
+}
+
+.label{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:18px;
+    font-weight:bold;
+    color:white;
+}
+
+.cell{
+    width:48px;
+    height:48px;
+    background:#bde0fe;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:22px;
+    user-select:none;
+    position: relative;
+}
+
+.cell:hover{
+    transform:scale(1.08);
+    background:#90dbf4;
+}
+
+/* ANIMAÇÃO DE VIRADA EM 3D */
+.flipped {
+    animation: flipTile 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes flipTile {
+    0% { transform: perspective(400px) rotateY(90deg); opacity: 0.7; }
+    100% { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+}
+
+/* ESTILIZAÇÃO DO NAVIO */
+.hit {
+    background: #90dbf4 !important;
+    border-radius: 0px !important;
+}
+
+.hit::before, .revealed-ship::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #2ecc71; 
+    border-bottom: 3px solid #27ae60;
+    z-index: 5;
+}
+
+.part-H-front::before { clip-path: polygon(100% 80%, 25% 80%, 0% 60%, 35% 50%, 60% 50%, 60% 35%, 75% 35%, 75% 50%, 100% 50%); }
+.part-H-mid::before { clip-path: polygon(0% 80%, 100% 80%, 100% 50%, 85% 50%, 85% 20%, 55% 20%, 55% 35%, 25% 35%, 25% 50%, 0% 50%); }
+.part-H-back::before { clip-path: polygon(0% 80%, 80% 80%, 100% 55%, 80% 50%, 0% 50%); }
+.part-H-single::before { clip-path: polygon(5% 70%, 20% 50%, 40% 50%, 45% 25%, 55% 25%, 58% 50%, 85% 50%, 98% 70%, 85% 85%, 15% 85%); background: #27ae60; }
+
+.part-V-front::before { clip-path: polygon(20% 100%, 20% 25%, 40% 0%, 50% 35%, 50% 60%, 65% 60%, 65% 75%, 50% 75%, 50% 100%); }
+.part-V-mid::before { clip-path: polygon(20% 0%, 20% 100%, 50% 100%, 50% 85%, 80% 85%, 80% 55%, 65% 55%, 65% 25%, 50% 25%, 50% 0%); }
+.part-V-back::before { clip-path: polygon(20% 0%, 20% 80%, 45% 100%, 50% 80%, 50% 0%); }
+.part-V-single::before { clip-path: polygon(30% 15%, 50% 15%, 50% 35%, 75% 40%, 75% 60%, 50% 65%, 50% 85%, 30% 85%, 15% 70%, 15% 30%); background: #27ae60; }
+
+/* ACERTO DA TABUADA (ÁGUA AZUL) */
+.miss{
+    background:#2563eb !important;
+    font-size: 10px !important;
+    line-height: 1.1;
+    font-weight: bold;
+    color: white;
+    z-index: 2;
+    text-align: center;
+    padding: 2px;
+}
+
+/* ERRO DA TABUADA (ÁGUA VERMELHA) */
+.water-wrong {
+    background: #ff6b6b !important;
+    font-size: 10px !important;
+    line-height: 1.1;
+    font-weight: bold;
+    color: white;
+    z-index: 2;
+    text-align: center;
+    padding: 2px;
+}
+
+.bomb-hit{
+    background:#9b5de5 !important;
+    z-index: 2;
+}
+
+.revealed-ship {
+    background: #ced6e0 !important;
+    border-radius: 0px !important;
+}
+.revealed-ship::before { background: #a3e4d7 !important; }
+.revealed-bomb{ background:#d0b3ff !important; }
+
+.buttons{
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+    width: 100%;
+}
+
+button{
+    border:none;
+    padding:12px 20px;
+    border-radius:15px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+    color:white;
+    width: 100%;
+}
+
+button:hover{ transform:scale(1.03); }
+.reveal-btn{ background:#ff006e; }
+.restart-btn{ background:#ffb703; }
+
+.legend{
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    color: #444;
+}
+
+.box{ width:20px; height:20px; border-radius:5px; flex-shrink: 0; }
+.green-ship{ background:#2ecc71; }
+.blue-water{ background:#2563eb; }
+.red-water{ background:#ff6b6b; }
+.purple{ background:#9b5de5; }
+
+/* MODAIS */
+.bomb-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 35px;
+    border-radius: 30px;
+    text-align: center;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h2 { font-size: 28px; margin-bottom: 10px; }
+.math-challenge { font-size: 56px; font-weight: bold; margin: 20px 0; padding: 10px; border-radius: 15px; border: 3px dashed; }
+.modal-content input { font-size: 24px; padding: 10px; width: 80%; text-align: center; border-radius: 15px; border: 3px solid #ccc; margin-bottom: 20px; outline: none; }
+.modal-content button { border: none; padding: 12px 30px; font-size: 22px; color: white; border-radius: 15px; cursor: pointer; font-weight: bold; width: 80%; }
+
+.bomb-border { border: 8px solid #9b5de5; }
+.bomb-border h2 { color: #ff6b6b; }
+.bomb-color { color: #9b5de5; background: #f1f0ff; border-color: #9b5de5; }
+.bomb-btn { background: #2ecc71; }
+.timer-box { margin-top: 20px; font-size: 22px; font-weight: bold; color: #e74c3c; }
+.timer-box span { font-size: 28px; background: #fdadad; padding: 2px 12px; border-radius: 10px; }
+
+.water-border { border: 8px solid #2563eb; }
+.water-border h2 { color: #2563eb; }
+.water-color { color: #2563eb; background: #ebf2ff; border-color: #2563eb; }
+.water-btn { background: #2563eb; }
+
+@media(max-width:900px){
+    .main-layout { flex-direction: column; align-items: center; gap: 20px; }
+    .left-panel { max-width: 100%; width: 100%; }
+    .cell{ width:38px; height:38px; font-size:12px; }
+    .board{ grid-template-columns:30px repeat(10, 38px); grid-template-rows:30px repeat(10, 38px); }
+    h1{ font-size:30px; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+    <h1>🚢 Batalha Naval 🚢</h1>
+    <div class="subtitle">Encontre as frotas e vença os desafios matemáticos!</div>
+
+    <div class="main-layout">
+        
+        <div class="left-panel">
+            <div class="scoreboard">
+                <div class="score hits"><span>✅ Acertos:</span> <span id="hits">0</span></div>
+                <div class="score misses"><span>🌊 Água / Erros:</span> <span id="misses">0</span></div>
+                <div class="score bombs"><span>💣 Bombas:</span> <span id="bombs">0</span></div>
+            </div>
+
+            <div class="message" id="message">Escolha uma posição no tabuleiro!</div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="box green-ship"></div><span>Navio Encontrado</span></div>
+                <div class="legend-item"><div class="box blue-water"></div><span>Tabuada Correta (Água)</span></div>
+                <div class="legend-item"><div class="box red-water"></div><span>Tabuada Errada (Vermelho)</span></div>
+                <div class="legend-item"><div class="box purple"></div><span>Bomba Ativada / Explodida</span></div>
+            </div>
+
+            <div class="buttons">
+                <button class="reveal-btn" onclick="revealBoard()">👀 Revelar Tudo</button>
+                <button class="restart-btn" onclick="newGame()">🔄 Novo Jogo</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="board-wrapper">
+                <div class="board" id="board"></div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="bomb-modal" id="bombModal">
+    <div class="modal-content bomb-border">
+        <h2>⚠️ DESAFIO DA BOMBA! ⚠️</h2>
+        <p>Resolva a grande operação para desarmá-la!</p>
+        <div class="math-challenge bomb-color" id="bombQuestion">18 × 4</div>
+        <input type="number" id="bombAnswer" placeholder="Digite o resultado" autofocus>
+        <br>
+        <button class="bomb-btn" onclick="validateBombAnswer()">Desarmar 🛠️</button>
+        <div class="timer-box">⏱️ Tempo Restante: <span id="timerCount">40</span>s</div>
+    </div>
+</div>
+
+<div class="bomb-modal" id="waterModal">
+    <div class="modal-content water-border">
+        <h2>🌊 DESAFIO DA ÁGUA! 🌊</h2>
+        <p>Calcule a tabuada corretamente para registrar o tiro!</p>
+        <div class="math-challenge water-color" id="waterQuestion">7 × 8</div>
+        <input type="number" id="waterAnswer" placeholder="Digite o resultado">
+        <br>
+        <button class="water-btn" onclick="validateWaterAnswer()">Confirmar Resposta 🧭</button>
+    </div>
+</div>
+
+<script>
+
+const board = document.getElementById("board");
+const hitsText = document.getElementById("hits");
+const missesText = document.getElementById("misses");
+const bombsText = document.getElementById("bombs");
+const message = document.getElementById("message");
+
+const bombModal = document.getElementById("bombModal");
+const bombQuestion = document.getElementById("bombQuestion");
+const bombAnswerInput = document.getElementById("bombAnswer");
+const timerCountText = document.getElementById("timerCount");
+
+const waterModal = document.getElementById("waterModal");
+const waterQuestion = document.getElementById("waterQuestion");
+const waterAnswerInput = document.getElementById("waterAnswer");
+
+const letters = ["A","B","C","D","E","F","G","H","I","J"];
+
+let hits = 0;
+let misses = 0;
+let bombCount = 0;
+
+const shipMap = {}; 
+const bombs = [];
+const shipHealth = {}; 
+
+let bombTimerInterval = null;
+let timeLeft = 40;
+let currentCorrectAnswer = 0;
+let currentCellActive = null;
+let currentWaterText = "";
+let currentCoord = "";
+
+let audioCtx = null;
+
+function initAudio() {
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    } catch(e) {
+        console.log("AudioContext não suportado.");
+    }
+}
+
+function playSound(type) {
+    initAudio();
+    if(!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+
+    if (type === 'hit') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); 
+        osc.frequency.setValueAtTime(783.99, now + 0.08); 
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+    } 
+    else if (type === 'miss') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(350, now);
+        osc.frequency.setValueAtTime(450, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    } 
+    else if (type === 'bomb') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(30, now + 0.7);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+        osc.start(now);
+        osc.stop(now + 0.7);
+    }
+    else if (type === 'celebration') {
+        const notes = [261.63, 329.63, 392.00, 523.25]; 
+        notes.forEach((freq, index) => {
+            const noteOsc = audioCtx.createOscillator();
+            const noteGain = audioCtx.createGain();
+            noteOsc.type = 'sine';
+            noteOsc.frequency.setValueAtTime(freq, now + index * 0.1);
+            noteGain.gain.setValueAtTime(0.2, now + index * 0.1);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.4);
+            noteOsc.connect(noteGain);
+            noteGain.connect(audioCtx.destination);
+            noteOsc.start(now + index * 0.1);
+            noteOsc.stop(now + index * 0.1 + 0.4);
+        });
+    }
+}
+
+// Geração de Frota Aleatória
+const fleetSizes = [5, 4, 3, 2, 1, 1]; 
+let uniqueShipId = 1;
+
+fleetSizes.forEach(size => {
+    let placed = false;
+    while(!placed) {
+        let isHorizontal = Math.random() < 0.5;
+        let row = Math.floor(Math.random() * 10);
+        let col = Math.floor(Math.random() * 10);
+        
+        if(isHorizontal && col + size > 10) continue;
+        if(!isHorizontal && row + size > 10) continue;
+        
+        let overlap = false;
+        for(let i = 0; i < size; i++) {
+            let r = isHorizontal ? row : row + i;
+            let c = isHorizontal ? col + i : col;
+            if(shipMap[`${r}-${c}`]) {
+                overlap = true;
+                break;
+            }
+        }
+        if(overlap) continue;
+        
+        shipHealth[uniqueShipId] = size; 
+
+        for(let i = 0; i < size; i++) {
+            let r = isHorizontal ? row : row + i;
+            let c = isHorizontal ? col + i : col;
+            
+            let part = 'mid';
+            if (size === 1) part = 'single';      
+            else if (i === 0) part = 'front';     
+            else if (i === size - 1) part = 'back'; 
+            
+            shipMap[`${r}-${c}`] = {
+                orientation: isHorizontal ? 'H' : 'V',
+                part: part,
+                id: uniqueShipId
+            };
+        }
+        uniqueShipId++;
+        placed = true;
+    }
+});
+
+while(bombs.length < 6){
+    let row = Math.floor(Math.random() * 10);
+    let col = Math.floor(Math.random() * 10);
+    let pos = `${row}-${col}`;
+    if(!shipMap[pos] && !bombs.includes(pos)){
+        bombs.push(pos);
+    }
+}
+
+function createBoard(){
+    board.innerHTML = "";
+    const empty = document.createElement("div");
+    board.appendChild(empty);
+
+    for(let c = 0; c < 10; c++){
+        const label = document.createElement("div");
+        label.classList.add("label");
+        label.textContent = letters[c];
+        board.appendChild(label);
+    }
+
+    for(let row = 0; row < 10; row++){
+        const rowLabel = document.createElement("div");
+        rowLabel.classList.add("label");
+        rowLabel.textContent = row + 1;
+        board.appendChild(rowLabel);
+
+        for(let col = 0; col < 10; col++){
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+            cell.addEventListener("click", handleClick);
+            board.appendChild(cell);
+        }
+    }
+}
+
+function getRandomMultiplication() {
+    let num1 = Math.floor(Math.random() * 8) + 2; 
+    let num2 = Math.floor(Math.random() * 9) + 1; 
+    return { txt: `${num1}×${num2}`, ans: num1 * num2 };
+}
+
+function getBigMultiplication() {
+    let num1 = Math.floor(Math.random() * 8) + 12; 
+    let num2 = Math.floor(Math.random() * 3) + 3;  
+    return { txt: `${num1} × ${num2}`, ans: num1 * num2 };
+}
+
+function handleClick(e){
+    const cell = e.target.closest('.cell');
+    if(!cell) return;
+
+    if(
+        cell.classList.contains("hit") ||
+        cell.classList.contains("miss") ||
+        cell.classList.contains("water-wrong") ||
+        cell.classList.contains("bomb-hit")
+    ){
+        return;
+    }
+
+    // Trava o tabuleiro temporariamente durante a animação/desafio
+    board.style.pointerEvents = "none";
+
+    const row = cell.dataset.row;
+    const col = cell.dataset.col;
+    const coord = `${letters[col]}${Number(row)+1}`;
+    const pos = `${row}-${col}`;
+
+    currentCellActive = cell;
+    currentCoord = coord;
+
+    if(shipMap[pos]){
+        const shipPart = shipMap[pos];
+        cell.classList.add("hit", `part-${shipPart.orientation}-${shipPart.part}`, "flipped");
+        cell.innerHTML = ""; 
+
+        hits++;
+        hitsText.textContent = hits;
+        shipHealth[shipPart.id]--;
+
+        if (shipHealth[shipPart.id] === 0) {
+            playSound('celebration'); 
+            message.textContent = `🏆 AFUNDOU! Você destruiu o navio em ${coord}!`;
+        } else {
+            playSound('hit'); 
+            message.textContent = `🎉 Fogo! Acertou a frota em ${coord}!`;
+        }
+        board.style.pointerEvents = "auto"; // Libera clique
+    }
+    else if(bombs.includes(pos)){
+        playSound('bomb'); 
+        cell.classList.add("bomb-hit", "flipped");
+        cell.innerHTML = "💣"; 
+        message.textContent = `⚠️ BOMBA em ${coord}! Preparando grande desafio...`;
+        
+        setTimeout(() => {
+            triggerBombChallenge(coord);
+        }, 1200);
+    }
+    else{
+        // ANIMAÇÃO ANTES DE APARECER A PERGUNTA DA ÁGUA
+        cell.classList.add("flipped");
+        cell.style.background = "#64b5f6"; 
+        cell.innerHTML = "❓";
+        message.textContent = `🌊 Sondando águas em ${coord}...`;
+
+        const prob = getRandomMultiplication();
+        currentCorrectAnswer = prob.ans;
+        currentWaterText = prob.txt;
+
+        setTimeout(() => {
+            waterQuestion.textContent = prob.txt;
+            waterAnswerInput.value = "";
+            waterModal.style.display = "flex";
+            waterAnswerInput.focus();
+        }, 1200);
+    }
+}
+
+function validateWaterAnswer() {
+    const userAns = parseInt(waterAnswerInput.value);
+    waterModal.style.display = "none";
+    board.style.pointerEvents = "auto"; // Libera cliques no tabuleiro
+    currentCellActive.style.background = ""; // Remove cor temporária
+
+    if(userAns === currentCorrectAnswer) {
+        playSound('miss');
+        currentCellActive.className = "cell miss flipped"; 
+        currentCellActive.innerHTML = `${currentWaterText}<br>=${userAns}`;
+
+        misses++;
+        missesText.textContent = misses;
+        message.textContent = `🌊 Água em ${currentCoord}! Acertou: ${currentWaterText} = ${userAns}`;
+    } else {
+        // RESPOSTA ERRADA -> FICA VERMELHA
+        playSound('bomb'); 
+        currentCellActive.className = "cell water-wrong flipped"; 
+        currentCellActive.innerHTML = `${currentWaterText}<br>❌`;
+
+        misses++;
+        missesText.textContent = misses;
+        message.textContent = `❌ Errou a tabuada em ${currentCoord}! A água ficou vermelha!`;
+    }
+}
+
+function triggerBombChallenge(coord) {
+    const challenge = getBigMultiplication();
+    currentCorrectAnswer = challenge.ans;
+    bombQuestion.textContent = challenge.txt;
+    bombAnswerInput.value = "";
+    timeLeft = 40;
+    timerCountText.textContent = timeLeft;
+    
+    bombModal.style.display = "flex";
+    bombAnswerInput.focus();
+
+    clearInterval(bombTimerInterval);
+    bombTimerInterval = setInterval(() => {
+        timeLeft--;
+        timerCountText.textContent = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(bombTimerInterval);
+            explodeBombByTimeout(coord);
+        }
+    }, 1000);
+}
+
+function validateBombAnswer() {
+    const userAns = parseInt(bombAnswerInput.value);
+    clearInterval(bombTimerInterval);
+    bombModal.style.display = "none";
+    board.style.pointerEvents = "auto"; // Libera cliques no tabuleiro
+
+    if(userAns === currentCorrectAnswer) {
+        playSound('celebration'); 
+        currentCellActive.innerHTML = "🛡️"; 
+        bombCount++;
+        bombsText.textContent = bombCount;
+        message.textContent = `💪 Sucesso! Você desarmou a bomba de ${currentCoord}!`;
+    } else {
+        // RESPOSTA ERRADA -> EXPLODE IMEDIATAMENTE!
+        playSound('bomb');
+        currentCellActive.innerHTML = "💥";
+        bombCount++;
+        bombsText.textContent = bombCount;
+        message.textContent = `💥 Resposta incorreta! A bomba explodiu em ${currentCoord}!`;
+    }
+}
+
+function explodeBombByTimeout(coord) {
+    bombModal.style.display = "none";
+    board.style.pointerEvents = "auto";
+    playSound('bomb');
+    currentCellActive.innerHTML = "💥";
+    
+    bombCount++;
+    bombsText.textContent = bombCount;
+    message.textContent = `💥 O tempo acabou! A bomba explodiu em ${coord}!`;
+}
+
+bombAnswerInput.addEventListener("keyup", function(e) { if (e.key === "Enter") validateBombAnswer(); });
+waterAnswerInput.addEventListener("keyup", function(e) { if (e.key === "Enter") validateWaterAnswer(); });
+
+function revealBoard(){
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach(cell => {
+        const row = cell.dataset.row;
+        const col = cell.dataset.col;
+        const pos = `${row}-${col}`;
+
+        if(
+            !cell.classList.contains("hit") &&
+            !cell.classList.contains("bomb-hit") &&
+            !cell.classList.contains("miss") &&
+            !cell.classList.contains("water-wrong")
+        ){
+            if(shipMap[pos]){
+                const shipPart = shipMap[pos];
+                cell.classList.add("revealed-ship", `part-${shipPart.orientation}-${shipPart.part}`, "flipped");
+            }
+            if(bombs.includes(pos)){
+                cell.classList.add("revealed-bomb", "flipped");
+                cell.innerHTML = "💣";
+            }
+        }
+    });
+    message.textContent = "👀 Frota oculta revelada no painel!";
+}
+
+function newGame(){
+    location.reload();
+}
+
+createBoard();
+
+</script>
+
+</body>
+</html>
