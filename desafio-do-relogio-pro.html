@@ -50,6 +50,35 @@
             width: 100%;
             max-width: 520px;
             text-align: center;
+            position: relative;
+        }
+
+        /* Botão de Ajuda Discreto */
+        .btn-help {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            color: #64748b;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .btn-help:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            transform: scale(1.08);
         }
 
         h1 {
@@ -305,10 +334,9 @@
             background-color: #2c3e50;
             margin-left: -3.5px;
             z-index: 4;
-            pointer-events: none; /* Padrão bloqueado (movimento engrenagem) */
+            pointer-events: none;
         }
 
-        /* Área de clique expandida para o ponteiro das horas no modo independente */
         .hour-hand::before {
             content: '';
             position: absolute;
@@ -342,7 +370,6 @@
             background: transparent;
         }
 
-        /* Ativa arrastar ponteiro de horas apenas quando no modo independente */
         .mode-independent .hour-hand {
             pointer-events: auto;
             cursor: grab;
@@ -410,7 +437,6 @@
             box-shadow: 0 2px 0px var(--primary-dark);
         }
 
-        /* Assinatura do Professor */
         .footer-signature {
             margin-top: 25px;
             font-size: 0.85rem;
@@ -419,7 +445,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* Modal de Feedback */
+        /* Modais */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -448,10 +474,12 @@
             border-radius: 24px;
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             transform: scale(0.8);
             transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-overlay.active .modal-card {
@@ -459,7 +487,7 @@
         }
 
         .modal-icon {
-            font-size: 4rem;
+            font-size: 3.5rem;
             margin-bottom: 10px;
         }
 
@@ -469,16 +497,52 @@
         }
 
         .modal-text {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #556a7e;
             margin-bottom: 20px;
             line-height: 1.4;
+        }
+
+        /* Estilos do Modal de Ajuda */
+        .help-list {
+            text-align: left;
+            margin: 15px 0 25px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .help-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .help-item i {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        .help-item strong {
+            color: var(--text);
         }
     </style>
 </head>
 <body>
 
     <div class="game-container">
+        <!-- Botão Discreto de Ajuda -->
+        <button class="btn-help" id="btnHelp" title="Como jogar / Instruções">
+            <i class="fa-solid fa-question"></i>
+        </button>
+
         <h1>Desafio do Relógio</h1>
         <span class="badge">Aprenda a ler as horas!</span>
 
@@ -535,17 +599,47 @@
             <button class="btn btn-check" id="btnCheck"><i class="fa-solid fa-circle-check"></i> Verificar</button>
         </div>
 
-        <!-- Assinatura do Professor -->
-        <!--<div class="footer-signature">Prof. Felipe Bezerra</div> -->
+        <div class="footer-signature">Prof. Felipe Bezerra</div>
     </div>
 
-    <!-- Modal de Resposta -->
+    <!-- Modal de Feedback -->
     <div class="modal-overlay" id="feedbackModal">
         <div class="modal-card">
             <div class="modal-icon" id="modalIcon">🎉</div>
             <h2 class="modal-title" id="modalTitle">Parabéns!</h2>
             <p class="modal-text" id="modalText">Você acertou a hora em cheio!</p>
             <button class="btn btn-next" id="btnModalClose" style="width: 100%;">Continuar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Ajuda / Instruções -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-card">
+            <div class="modal-icon" style="color: var(--secondary);"><i class="fa-solid fa-circle-info"></i></div>
+            <h2 class="modal-title">Como Usar</h2>
+            
+            <div class="help-list">
+                <div class="help-item">
+                    <i class="fa-solid fa-hand-pointer"></i>
+                    <div><strong>Mover Ponteiros:</strong> Clique e arraste o ponteiro azul (minutos) ou o preto (horas) para ajustar o tempo.</div>
+                </div>
+                <div class="help-item">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <div><strong>Modos de Movimento:</strong><br>
+                    • <i>Juntos (Engrenagem):</i> O ponteiro de horas avança proporcionalmente enquanto você gira o de minutos.<br>
+                    • <i>Independentes:</i> Permite mover cada ponteiro livremente.</div>
+                </div>
+                <div class="help-item">
+                    <i class="fa-solid fa-sliders"></i>
+                    <div><strong>Opções do Exercício:</strong> Escolha desafios por horas exatas, múltiplos de 5 min (tabuada), minutos exatos ou crie seu próprio horário no modo Professor.</div>
+                </div>
+                <div class="help-item">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <div><strong>Ajuda dos Minutos:</strong> Ative a chave para exibir os minutos ao redor do relógio e facilitar o aprendizado!</div>
+                </div>
+            </div>
+
+            <button class="btn btn-next" id="btnHelpClose" style="width: 100%;">Entendi!</button>
         </div>
     </div>
 
@@ -564,6 +658,11 @@
         const btnModalClose = document.getElementById('btnModalClose');
         const feedbackModal = document.getElementById('feedbackModal');
         const toggleMinutes = document.getElementById('toggleMinutes');
+
+        // Elementos de Ajuda
+        const btnHelp = document.getElementById('btnHelp');
+        const helpModal = document.getElementById('helpModal');
+        const btnHelpClose = document.getElementById('btnHelpClose');
         
         const timeTypeSelect = document.getElementById('timeTypeSelect');
         const movementModeSelect = document.getElementById('movementModeSelect');
@@ -635,17 +734,24 @@
             });
         });
 
+        // Eventos do Modal de Ajuda
+        btnHelp.addEventListener('click', () => {
+            helpModal.classList.add('active');
+        });
+
+        btnHelpClose.addEventListener('click', () => {
+            helpModal.classList.remove('active');
+        });
+
         // Alternar modo de movimento (Juntos vs Independentes)
         movementModeSelect.addEventListener('change', (e) => {
             movementMode = e.target.value;
             if (movementMode === 'independent') {
                 wrapper.classList.add('mode-independent');
-                // Sincroniza os ângulos independentes com a posição mecânica atual
                 indepMinuteAngle = (totalMinutesElapsed * 6) % 360;
                 indepHourAngle = (totalMinutesElapsed * 0.5) % 360;
             } else {
                 wrapper.classList.remove('mode-independent');
-                // Retoma a engrenagem a partir de onde os ponteiros independentes pararam
                 let h = Math.round(indepHourAngle / 30);
                 if (h === 0) h = 12;
                 let m = Math.round(indepMinuteAngle / 6);
@@ -691,7 +797,7 @@
             challengeText.textContent = "Mostrando a Hora Atual:";
             buttonGroup.style.display = 'none';
             movementModeRow.style.display = 'none';
-            movementMode = 'linked'; // Força para linked para acompanhar real o tempo
+            movementMode = 'linked';
             wrapper.classList.remove('mode-independent');
 
             const updateRealTime = () => {
@@ -702,7 +808,6 @@
                 
                 targetDisplay.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
                 
-                // Transforma horas, minutos e segundos em minutos fracionados absolutos
                 totalMinutesElapsed = (h % 12) * 60 + m + (s / 60);
                 updateClockPointersGraphics();
             };
@@ -834,7 +939,6 @@
                 if (totalMinutesElapsed >= 720) totalMinutesElapsed -= 720;
 
             } else {
-                // Fechamentos (snaps) pro modo independente
                 if (activeHand === 'minute') {
                     let currentMin = Math.round(indepMinuteAngle / 6);
                     if (timeTypeSelect.value === 'multiple5' || timeTypeSelect.value === 'sharp') {
@@ -847,7 +951,6 @@
                     }
                     indepMinuteAngle = currentMin * 6;
                 } else if (activeHand === 'hour') {
-                    // Trava magnética na hora exata quando no modo independente
                     let currentH = Math.round(indepHourAngle / 30);
                     indepHourAngle = currentH * 30;
                 }
@@ -901,14 +1004,12 @@
                 } else {
                     modalText.innerHTML = `Incrível! Você ajustou perfeitamente o horário de <strong>${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}</strong> no relógio de ponteiros!`;
                 }
-                
-                spawnConfetti();
             } else {
                 modalIcon.textContent = "🔍";
                 modalTitle.textContent = "Quase lá...";
                 modalTitle.style.color = "var(--primary-dark)";
                 
-                modalText.innerHTML = `Seu relógio está marcando <strong>${currentWholeHour}:${String(currentWholeMinute).padStart(2, '0')}</strong>.<br>O objetivo era ajustar para <strong>${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}</strong>!`;
+                modalText.innerHTML = `Seu relógio está marcando <strong>${currentWholeHour}:${String(currentWholeMinute).padStart(2, '0')}</strong>.<br>O objetivo era ajustar para <strong>${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}</strong>.<br>Ajuste os ponteiros e tente novamente!`;
             }
 
             feedbackModal.classList.add('active');
@@ -918,58 +1019,26 @@
             feedbackModal.classList.remove('active');
         }
 
-        function spawnConfetti() {
-            for(let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.style.position = 'fixed';
-                confetti.style.width = Math.random() * 8 + 6 + 'px';
-                confetti.style.height = Math.random() * 12 + 8 + 'px';
-                const colors = ['#ff6b6b', '#4ea8de', '#1dd1a1', '#f59f00', '#af71e9'];
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.top = '-20px';
-                confetti.style.zIndex = '9999';
-                confetti.style.pointerEvents = 'none';
-                document.body.appendChild(confetti);
-                
-                const animation = confetti.animate([
-                    { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-                    { transform: `translateY(105vh) translateX(${Math.random() * 80 - 40}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
-                ], { duration: Math.random() * 1000 + 1200, easing: 'ease-out' });
-                
-                animation.onfinish = () => confetti.remove();
-            }
-        }
-
-        // Eventos Ponteiro dos Minutos
+        // Event Listeners para Arraste (Mouse e Touch)
         minuteHand.addEventListener('mousedown', (e) => startDrag(e, 'minute'));
-        minuteHand.addEventListener('touchstart', (e) => startDrag(e, 'minute'), {passive: false});
-
-        // Eventos Ponteiro das Horas (Só reagem quando independentes via CSS pointer-events)
         hourHand.addEventListener('mousedown', (e) => startDrag(e, 'hour'));
-        hourHand.addEventListener('touchstart', (e) => startDrag(e, 'hour'), {passive: false});
 
-        // Eventos Globais de Movimento
-        window.addEventListener('mouseup', endDrag);
+        minuteHand.addEventListener('touchstart', (e) => startDrag(e, 'minute'), { passive: true });
+        hourHand.addEventListener('touchstart', (e) => startDrag(e, 'hour'), { passive: true });
+
         window.addEventListener('mousemove', handleRotation);
-        window.addEventListener('touchend', endDrag);
-        window.addEventListener('touchmove', handleRotation, {passive: false});
+        window.addEventListener('touchmove', handleRotation, { passive: true });
 
-        // Botões
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
         btnCheck.addEventListener('click', checkAnswer);
         btnNext.addEventListener('click', generateChallenge);
-        
-        btnModalClose.addEventListener('click', () => {
-            closeModal();
-            if (timeTypeSelect.value !== 'custom' && timeTypeSelect.value !== 'realtime') {
-                generateChallenge();
-            }
-        });
+        btnModalClose.addEventListener('click', closeModal);
 
-        window.onload = () => {
-            buildClockVisuals();
-            generateChallenge();
-        };
+        // Inicialização
+        buildClockVisuals();
+        generateChallenge();
     </script>
 </body>
 </html>
